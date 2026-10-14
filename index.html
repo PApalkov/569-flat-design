@@ -86,6 +86,10 @@
   }
   .tabs button { padding: 7px 15px; border: 0; background: transparent; font-size: 0.84rem; }
   .tabs button[aria-selected="true"] { background: var(--accent); color: #fff; }
+  .verlink { display: inline-flex; align-items: center; padding: 7px 13px; border-radius: 999px;
+    font: inherit; font-size: 0.84rem; font-weight: 600; text-decoration: none; color: var(--muted);
+    border: 1px dashed var(--line); margin-left: 2px; }
+  .verlink:hover { color: var(--accent); border-color: var(--accent); }
   /* ---------- scrollable text sheets ---------- */
   .sheet {
     position: fixed; inset: 0; z-index: 20; overflow-y: auto; -webkit-overflow-scrolling: touch;
@@ -147,11 +151,12 @@
   <button data-tab="tpower" role="tab" aria-selected="false">Розетки</button>
   <button data-tab="tscheme" role="tab" aria-selected="false">Гаммы</button>
   <button data-tab="tdesign" role="tab" aria-selected="false">Отделка</button>
+  <a class="verlink" href="v2/index.html" title="Вариант 2: кухня в одну стену">v2</a>
 </nav>
 
 <div class="panel" id="panel3d">
   <button id="btnFold" aria-expanded="true" title="Свернуть панель">Свернуть</button>
-  <h1 id="viewTitle">Квартира 569 — 37,7 м²</h1>
+  <h1 id="viewTitle">Вариант 1 — Г-образная кухня</h1>
   <p class="hint" id="viewHint">Тяните, чтобы вращать. Колесо или щипок — приблизить. Нажмите на предмет, чтобы узнать, что это.</p>
   <div class="row">
     <button id="btnDoll" aria-pressed="true">Сверху</button>
@@ -1903,7 +1908,7 @@
       hemi.intensity = evening ? 0.06 : 0.34;
     } else {
       const v = VIEWS[m]; theta = v.theta; phi = v.phi; radius = v.radius; target.copy(v.target);
-      viewTitle.textContent = m === 'doll' ? 'Квартира 569 — 37,7 м²' : 'Кухня-гостиная 6,90 × 2,81 м';
+      viewTitle.textContent = m === 'doll' ? 'Вариант 1 — Г-образная кухня' : 'Кухня-гостиная 6,90 × 2,81 м';
       viewHint.style.margin = '0 0 12px';
       viewHint.textContent = m === 'doll'
         ? 'Вся квартира на полную высоту 2,70. Двойной клик по месту — приблизиться туда. Колесо — зум к курсору, Shift + тяга или два пальца — сдвиг.'
@@ -2291,6 +2296,7 @@
     { b: [2.27, -1.425, 3.45, -0.925], l: 'шкаф 118 × 50' },
     { b: [2.79, -2.58, 3.41, -2.21], l: 'банкетка' }
   ];
+  const PLAN_DUCT = [[2.10, Z1 - 0.2], [X1 - 0.2, Z1 - 0.2], [X1 - 0.2, -0.40]];
   const PLAN_DOORS = [
     { hx: BX1, hz: bedDoor[1] - 0.04, w: 0.60, a0: 180, a1: 270 },
     { hx: bathDoor[1] - 0.05, hz: WZ1, w: 0.60, a0: 90, a1: 180 },
@@ -2442,6 +2448,10 @@
         <text class="pid" x="${px(cx)}" y="${px(cz)}">${p.id}</text></g>`;
       }
     });
+    if (layers.wet) {                              // трасса воздуховода от вытяжки до вентканала
+      o += `<polyline points="${PLAN_DUCT.map(q => px(q[0]) + ',' + px(q[1])).join(' ')}" fill="none" stroke="#4E7FA8" stroke-width="${u(2.4)}" stroke-dasharray="${u(9)} ${u(6)}" opacity="0.85"/>`;
+      o += `<text class="dt hl" x="${px(3.08)}" y="${px(0.40)}" fill="#4E7FA8" transform="rotate(-90 ${px(3.08)} ${px(0.40)})">воздуховод 3,1 м</text>`;
+    }
     // room names
     PLAN_ROOMS.forEach(r => {
       o += `<text class="rt" x="${px(r.x)}" y="${px(r.z)}">${esc(r.t)}</text>`;
