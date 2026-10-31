@@ -77,6 +77,34 @@
     .planTip { max-width: 185px; font-size: 0.72rem; padding: 5px 8px; }
   }
   .loading { position: fixed; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 0.9rem; pointer-events: none; }
+  /* ---------- colour constructor ---------- */
+  .cpanel {
+    position: fixed; z-index: 15; top: calc(64px + env(safe-area-inset-top, 0px)); right: 16px; width: 320px;
+    max-height: calc(100% - 84px); overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: var(--panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px 10px;
+  }
+  .cpanel[hidden] { display: none; }
+  .cpanel h2 { font-size: 1rem; margin: 0 0 2px; letter-spacing: -0.01em; }
+  .cpanel .hint { margin: 0 0 8px; font-size: 0.78rem; }
+  .cbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 8px; }
+  .cbar button { padding: 6px 10px; font-size: 0.78rem; }
+  .cpanel select { font: inherit; font-size: 0.8rem; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line);
+    background: transparent; color: var(--ink); width: 100%; margin-bottom: 6px; }
+  .cpanel details { border-top: 1px solid var(--line); padding: 4px 0; }
+  .cpanel summary { cursor: pointer; font-weight: 700; font-size: 0.86rem; padding: 5px 0; }
+  .crow { display: flex; align-items: center; gap: 8px; padding: 3px 4px; font-size: 0.82rem; border-radius: 8px; transition: background 0.4s; }
+  .crow span { flex: 1; line-height: 1.25; }
+  .crow input[type=color] { width: 34px; height: 26px; border: 1px solid var(--line); border-radius: 6px; padding: 1px; background: none; cursor: pointer; }
+  .crow code { font-size: 0.72rem; color: var(--muted); width: 54px; }
+  .crow .rst { padding: 1px 7px; font-size: 0.72rem; visibility: hidden; }
+  .crow.changed .rst { visibility: visible; }
+  .crow.changed span { font-weight: 600; }
+  .crow.flash { background: rgba(62,107,110,0.22); }
+  @media (max-width: 1100px) { .cpanel { max-height: calc(100% - 330px); min-height: 200px; } }
+  @media (max-width: 640px) {
+    .cpanel { left: 8px; right: 8px; width: auto; top: calc(52px + env(safe-area-inset-top, 0px)); max-height: 42%; min-height: 0; padding: 10px 12px 8px; }
+  }
   /* ---------- tabs ---------- */
   .tabs {
     position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
@@ -169,10 +197,22 @@
     <button id="btnSock" aria-pressed="false">Розетки</button>
     <button id="btnBlind" aria-pressed="false">Шторы: ткань</button>
     <button id="btnSpin" aria-pressed="false">Вращение</button>
+    <button id="btnColors" aria-pressed="false">Цвета</button>
     <button id="btnReset">Сбросить</button>
   </div>
   <div class="picked" id="picked"></div>
 </div>
+
+<aside class="cpanel" id="cpanel" hidden aria-label="Конструктор цветов">
+  <h2>Конструктор цветов</h2>
+  <p class="hint">Меняйте цвет любого элемента — сцена перекрашивается сразу. Нажмите на предмет в 3D, и его строка подсветится здесь. Выбор сохраняется в этом браузере и в ссылке.</p>
+  <select id="cPreset" aria-label="Взять за основу гамму"></select>
+  <div class="cbar">
+    <button id="cShare">Скопировать ссылку</button>
+    <button id="cResetAll">Сбросить всё</button>
+  </div>
+  <div id="cList"></div>
+</aside>
 
 <div id="planHost" hidden>
   <svg id="planSvg" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -207,7 +247,7 @@
 
 <section class="sheet" id="tdesign" hidden><div class="wrap">
 <h2>Отделка: спальня, санузел, прихожая</h2>
-<p class="lead">Кухня-гостиная остаётся как была. Три новых помещения собраны в той же палитре — тауп, светлый камень, дуб-ёлочка, чёрная фурнитура — чтобы квартира читалась одним целым, а не набором отдельных ремонтов. Ниже решения и, главное, почему именно так.</p>
+<p class="lead">Кухня-гостиная остаётся как была. Три новых помещения собраны в той же палитре — тауп, светлый камень, дуб, чёрная фурнитура — чтобы квартира читалась одним целым, а не набором отдельных ремонтов. Ниже решения и, главное, почему именно так.</p>
 
 <h3>Кухня Loft: серый глянец + графит + дуб вотан</h3>
 <p>Палитра пересобрана под выбранную кухню. Берём от неё фасады и столешницу, компоновка модулей остаётся наша — та, что считана от воды, канализации и вентканала на торцевой стене.</p>
@@ -227,7 +267,7 @@
 <p>Кухня занимает торец 19-метровой комнаты, поэтому её палитра задаёт всю гостиную. Разложил так, чтобы серо-графитовый блок не выглядел инородным пятном:</p>
 <table><tbody>
 <tr><td><span class="swatch" style="background:#C9C4BC"></span>тёплый серый <b>#C9C4BC</b></td><td>стены всех комнат — вместо прежнего бежевого. Держит серый кухни, но на полтона светлее, чтобы комната 2,81 м не давила</td></tr>
-<tr><td><span class="swatch" style="background:#7E5A3C"></span>дуб-ёлочка</td><td>пол без изменений: он и так перекликается со столешницей</td></tr>
+<tr><td><span class="swatch" style="background:#9E7C5C"></span>ламинат под дуб</td><td>пол всей квартиры, кроме санузла и тамбура: прямая доска 1380 × 193 без рисунка, вдоль комнаты к окну. Тёплый средний тон перекликается со столешницей</td></tr>
 <tr><td><span class="swatch" style="background:#BFBDB7"></span>светлый серо-беж <b>#BFBDB7</b></td><td>диван — ушёл от тёплого бежа к нейтральному</td></tr>
 <tr><td><span class="swatch" style="background:#3C4046"></span>графит <b>#3C4046</b></td><td>подушки на диване и ТВ-тумба — тот же графит, что колонна кухни: два пятна, чтобы цвет не был одиноким</td></tr>
 <tr><td><span class="swatch" style="background:#A98E63"></span>дуб в текстиле <b>#A98E63</b></td><td>плед и акцент в картине — эхо столешницы на другом конце комнаты</td></tr>
@@ -270,31 +310,27 @@
 <li>Слив ванны уходит в существующий W5: 0,6 м по полу вдоль северной стены. Пол санузла и так поднимается — лежак W8 проложен открыто по плите, так что место для трубы уже есть.</li>
 </ul>
 
-<h4>Унитаз напольный, компакт</h4>
-<p>Инсталляцию убрал. Унитаз-компакт встаёт прямо над выпуском 110 (W7, x 3,23). Ось унитаза — x 3,17, это 6 см смещения, берётся эксцентриковой манжетой.</p>
-<p class="note">Тесновато справа: до стены стояка 0,25 м по оси. Но стена там со ступенькой — на уровне сидения она отодвинута до x 3,56, то есть у плеча 0,39 м. Узко только за бачком. Для 3,5 м² это нормальная цифра.</p>
-
-<h4>Стиральная машина: «напротив унитаза» не получится, и вот почему</h4>
-<p>Вы попросили поставить машину напротив унитаза. Я посчитал — это физически невозможно, и дело не в раскладке, а в арифметике:</p>
-<table><thead><tr><th>Что</th><th class="num">Размер</th></tr></thead><tbody>
-<tr><td>Глубина санузла</td><td class="num">1,545 м</td></tr>
-<tr><td>Унитаз-компакт от стены</td><td class="num">−0,65 м</td></tr>
-<tr><td>Стиральная машина от противоположной стены</td><td class="num">−0,60 м</td></tr>
-<tr><td><b>Остаётся между ними</b></td><td class="num"><b>0,295 м</b></td></tr>
-</tbody></table>
-<p>Сидя на унитазе коленям нужно минимум 0,60 м. Даже если взять узкую машину глубиной 0,45 и компактный унитаз 0,60 — остаётся 0,495 м, всё равно мало. Плюс дверь санузла занимает на южной стене участок x 2,04…2,74, и единственный свободный кусок напротив унитаза — как раз x 2,74…3,56, то есть прямо в колени.</p>
-<p><b>Что сделал вместо этого:</b> машина стоит на той же северной стене, через проход от унитаза, под каменной столешницей, а сверху на ней раковина. Это даёт:</p>
+<h4>Унитаз — в угол у стены стояка</h4>
+<p>По вашей правке унитаз переезжает в юго-восточный угол: спиной к стене стояка (x 3,56), лицом на запад, ось на z −3,05. От оси до южной стены 0,37 м, перед унитазом до ванны почти метр свободного пола. Это лучше прежнего места у северной стены — там до стены стояка по оси было 0,25 м.</p>
 <ul>
-<li>Машина попадает ровно на свои выводы: W3/W4 (вода) и W5 (слив 50) — всё внутри тумбы, ничего тянуть через комнату не надо.</li>
-<li>Перед унитазом остаётся <b>0,845 м</b> свободного пола, перед машиной <b>0,945 м</b> — обе цифры комфортные.</li>
-<li>Зеркало с подсветкой 60 × 80 над раковиной, розетка машины IP44 сбоку над столешницей, не за корпусом.</li>
+<li><b>Канализация (W27).</b> Труба 110 от выпуска унитаза к старому выпуску W7: 1,3 м вдоль стены стояка. Перепад с 0,18 до 0,11 — уклон 5 %, нужно минимум 2 %. Труба идёт низким коробом за унитазом и дальше в коробе под столешницей справа от машины.</li>
+<li><b>Вода (W26).</b> Тройник от W6, который теперь стоит за машиной, и 1,3 м трубы рядом с канализацией.</li>
+<li>Полотенцесушитель остаётся на стене стояка, но поднят на 1,17…1,85, над бачком — под ним 30 см до кнопки слива.</li>
 </ul>
-<p class="note">Плата за это — раковина над машиной мелкая и чуть высоковата (борт ~0,95). Если такой компромисс не нравится, альтернатива одна: <b>унести машину из санузла</b>. Есть два места. В прихожей — но туда придётся тянуть воду и слив, это дорого. На кухне — застройщик там предусмотрел третий холодный отвод и слив 50, но после перестановки эти выводы ушли под посудомойку, и машину пришлось бы ставить вместо шкафа 60. Скажите, если хотите посмотреть такой вариант.</p>
+
+<h4>Стиральная машина — на месте прежнего унитаза</h4>
+<p>Северная стена теперь собрана одной столешницей 144 см от x 1,98 до стены стояка: <b>тумба 60 с раковиной · машина 60 · короб 22 см</b> под трубы унитаза.</p>
+<ul>
+<li>Раковина больше не стоит над машиной: обычная тумба с двумя ящиками и встраиваемая раковина. Ушёл прежний компромисс с мелкой и высокой чашей.</li>
+<li>Машина садится на W6 (холодная вода прямо за ней), слив шлангом в сифон раковины над W5, это 0,5 м.</li>
+<li>Розетка машины — существующая точка W9: после переноса унитаза она оказалась над столешницей сбоку от машины. Отдельная W20 больше не нужна.</li>
+<li>Между фасадом машины и боком унитаза ≈ 0,37 м. Люк открывается, но загружать бельё будете стоя чуть левее, у тумбы. Если нужно свободнее, возьмите машину глубиной 0,45 — зазор станет 0,54.</li>
+</ul>
 
 <h4>Остальное в санузле</h4>
 <ul>
-<li>Полотенцесушитель электрический 50 × 72 на стене стояка, у выхода из ванны.</li>
-<li>Отделка: крупноформатный керамогранит под травертин на стенах и полу. Акцентная рифлёная панель в цвет дерева кухни — за раковиной и унитазом, то есть на той стене, которую видно от двери.</li>
+<li>Отделка стен: крупноформатный керамогранит под травертин. Акцентная рифлёная панель в цвет дерева кухни — за тумбой и машиной, то есть на той стене, которую видно от двери.</li>
+<li><b>Пол — керамогранит под дерево 20 × 120</b>, тот же тёплый светло-коричневый дуб, что ламинат (сверено по образцам рядом: ламинат ≈ #B39A85, плитка ≈ #B8A08C — плитка на тон светлее и с более заметными сучками), вдоль длинной стороны санузла. Пол квартиры и санузла читается одним материалом. <b>Стена за унитазом</b> отделана той же плиткой, доска вертикально — пол как будто заворачивает на стену. Стык пола и стены в углу делаем без плинтуса, раскладку на стене начинать от угла с целой доски.</li>
 <li>Дверь 0,70 открывается наружу, петли на восточном косяке — см. раздел про двери.</li>
 <li>Плоский влагостойкий светильник на потолке, IP44.</li>
 </ul>
@@ -376,7 +412,7 @@
 
 <h4>Где рулонные одни — ошибка</h4>
 <ul>
-<li><b>Гостиная зазвучит.</b> Посчитайте мягкие поверхности в комнате 19 м²: диван, ковёр 220 × 145 и всё. Пол — твёрдая ёлочка, кухня — глянец и камень, стены — штукатурка, потолок голый. Шторы в пол — это 5–6 м² ткани, то есть вторая по величине звукопоглощающая поверхность после дивана. Убрав их, вы получите гулкую комнату, в которой телевизор придётся делать громче. Это слышно сразу и лечится потом дорого.</li>
+<li><b>Гостиная зазвучит.</b> Посчитайте мягкие поверхности в комнате 19 м²: диван, ковёр 220 × 145 и всё. Пол — ламинат, кухня — глянец и камень, стены — штукатурка, потолок голый. Шторы в пол — это 5–6 м² ткани, то есть вторая по величине звукопоглощающая поверхность после дивана. Убрав их, вы получите гулкую комнату, в которой телевизор придётся делать громче. Это слышно сразу и лечится потом дорого.</li>
 <li><b>Рулонная не даёт темноты сама по себе.</b> Обычная штора блэкаут светит по бокам полосами в 1,5–2 см — в спальне на западную сторону летним вечером это заметно. Нужна <b>закрытая кассета с боковыми направляющими</b>, иначе смысла в блэкауте нет. В модели спальня показана именно так, с направляющими.</li>
 <li>Голое окно без ткани в жилой комнате читается как офис — особенно в вариантах «Тёплый серый» и «Графит и дуб», где и так много серого.</li>
 </ul>
@@ -495,7 +531,7 @@
 <li>Попутно убрано локальное отсечение геометрии: в режиме «Сверху» стены больше не срезаются по высоте, а прячутся целиком — это и дешевле для шейдеров, и показывает квартиру на полную высоту 2,70.</li>
 <li>Попутно: убрана рябь теней на перегородке у входа. Причина была не в тенях — шкаф прихожей на 12 см залезал внутрь перегородки, совпадающие грани мерцали. Шкаф стал 118 см вместо 130.</li>
 </ul>
-<p class="note">Что осталось дорогим по задумке: мягкие тени PCF и процедурная генерация всех текстур при загрузке. Первые 2–3 секунды после открытия страница честно считает дерево, мрамор, ткань и ёлочку пола — зато в файле нет ни одной внешней картинки и он работает без интернета.</p>
+<p class="note">Что осталось дорогим по задумке: мягкие тени PCF и процедурная генерация всех текстур при загрузке. Первые 2–3 секунды после открытия страница честно считает дерево, мрамор, ткань и доску пола — зато в файле нет ни одной внешней картинки и он работает без интернета.</p>
 
 <h3>Что обязательно проверить на месте</h3>
 <ul>
@@ -507,6 +543,8 @@
 <li><b>Трасса воздуховода кухни.</b> 3,1 м с двумя поворотами до вентканала над холодильником. Проверить, что антресоль 2,37…2,68 реально вмещает канал 125 мм или плоский 60 × 204.</li>
 <li><b>Уровень пола в санузле.</b> Лежак 110 мм (W8) проложен открыто по плите — он задаёт минимальную толщину пирога пола и высоту порожка. В этот же пирог уходит слив ванны.</li>
 <li>Точные отметки W1…W7 — от них зависит, сядет ли смеситель ванны на готовые выводы без переделки.</li>
+<li><b>Отметка выпуска W7.</b> От неё зависит уклон трубы 110 от нового места унитаза. Если W7 выше 0,14, нужен унитаз с высоким горизонтальным выпуском.</li>
+<li><b>Ламинат на кухне.</b> Берите влагостойкий, с пропитанными замками, класс 33. Под весь ламинат нужна плотная подложка: ламинат звучит громче инженерной доски.</li>
 <li>Подоконники и верх окон: приняты 0,80 и 2,45. По фотографии подоконник считался как 0,78 — сходится.</li>
 <li>Все координаты в таблице — оценка по фотографиям, а не обмер. Перед штроблением перемерить рулеткой.</li>
 </ul>
@@ -837,9 +875,11 @@
     [WX0, BZ1, 2.15, Z0],                // проход гостиная — прихожая
     [BX1, bedDoor[0], WX0, bedDoor[1]]   // проём двери спальни
   ];
+  const FLOOR_WOOD = [
+    [WX0, BZ0, WX1, WZJ], [WX0, WZJ, WX1b, WZ1],   // санузел: керамогранит под дерево
+    [bathDoor[0], WZ1, bathDoor[1], HZ0]           // проём двери санузла
+  ];
   const FLOOR_TILE = [
-    [WX0, BZ0, WX1, WZJ], [WX0, WZJ, WX1b, WZ1],   // санузел
-    [bathDoor[0], WZ1, bathDoor[1], HZ0],          // проём двери санузла
     [X1, HZ0, PX1, PZ1]                            // входной тамбур
   ];
   const skyPanels = [];
@@ -901,35 +941,70 @@
   const standMat = mat({ color: '#3C4046', roughness: 0.5 });
   const ledMat = new THREE.MeshBasicMaterial({ color: '#3a3a3a' });
 
-  // floor: one oak field across the whole flat, porcelain in the bathroom and the entrance pocket
+  // floor: laminate across the whole flat, wood-look porcelain in the bathroom, plain porcelain in the entrance pocket
   const oakFloor = FLOOR_OAK.map(r => {
     const o = mesh(new THREE.ShapeGeometry(rectShape(r[0], r[1], r[2], r[3])), M.floor);
     o.rotation.x = -Math.PI / 2; o.castShadow = false; return o;
   });
   const floor = oakFloor[0];
-  function chevronTextures() {
-    const S = 1024, cols = 4, Cw = S / cols, rows = 12, Pw = S / rows;
-    const c = newCanvas(S), cx = c.getContext('2d'), img = cx.createImageData(S, S), d = img.data;
-    const b = newCanvas(S), bx = b.getContext('2d'), bimg = bx.createImageData(S, S), bd = bimg.data;
-    const sh = []; for (let i = 0; i < cols * rows; i++) sh.push({ l: 0.86 + rnd() * 0.22, g: rnd() * 6.28, w: (rnd() - 0.5) * 0.08 });
-    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
-      const col = (x / Cw) | 0, lx = x - col * Cw, dir = col % 2 ? 1 : -1;
-      const v = (((y + dir * (lx - Cw / 2)) % S) + S) % S;
-      const pI = (v / Pw) | 0, f = v - pI * Pw, s0 = sh[col * rows + pI];
-      const grain = Math.sin(v * 0.6 + Math.sin(lx * 0.018 + s0.g) * 4) * 0.5 + 0.5;
-      let k = s0.l * (0.93 + grain * 0.09) + (rnd() - 0.5) * 0.05;
-      let bump = 150 + grain * 30;
-      if (lx < 1.6 || f < 1.6) { k *= 0.55; bump = 40; }
-      const i = (y * S + x) * 4;
-      d[i] = Math.min(255, 126 * k * (1 + s0.w)); d[i + 1] = Math.min(255, 97 * k); d[i + 2] = Math.min(255, 72 * k * (1 - s0.w)); d[i + 3] = 255;
+  // straight planks along u, running bond with random offsets; covers 2 plank lengths x 6 rows.
+  // vert = true transposes the canvas so the planks run along v (walls)
+  function plankTextures(o) {
+    const SL = 2048, SW = 1024, rows = 6, L = SL / 2, P = SW / rows, PI = Math.ceil(P);
+    const cw = o.vert ? SW : SL, ch = o.vert ? SL : SW;
+    const c = newCanvas(cw, ch), cx = c.getContext('2d'), img = cx.createImageData(cw, ch), d = img.data;
+    const b = newCanvas(cw, ch), bx = b.getContext('2d'), bimg = bx.createImageData(cw, ch), bd = bimg.data;
+    const off = [], sh = [];
+    for (let r = 0; r < rows; r++) {
+      let v; do { v = rnd() * L; } while (r && Math.abs(v - off[r - 1]) < L * 0.25);
+      off.push(v);
+    }
+    for (let i = 0; i < rows * 2; i++) {
+      const fib = new Float32Array(PI); let a = 0;
+      for (let y = 0; y < PI; y++) { a = a * 0.6 + (rnd() - 0.5); fib[y] = a; }
+      const knots = [];
+      for (let k = 0; k < o.knots; k++) if (rnd() < 0.6) knots.push({ x: rnd() * L, y: P * (0.25 + rnd() * 0.5), r: 6 + rnd() * 10 });
+      sh.push({ l: 1 - o.vary / 2 + rnd() * o.vary, g: rnd() * 6.28, g2: rnd() * 6.28, w: (rnd() - 0.5) * 0.06, fib, knots });
+    }
+    for (let y = 0; y < SW; y++) for (let x = 0; x < SL; x++) {
+      const row = (y / P) | 0, ly = y - row * P, fy = ly | 0;
+      const xs = (x + off[row]) % SL, pk = (xs / L) | 0, lx = xs - pk * L, s = sh[row * 2 + pk];
+      const yy = ly + Math.sin(lx * 0.004 + s.g) * 9 + Math.sin(lx * 0.017 + s.g2) * 2.5;
+      const grain = Math.sin(yy * 0.32 + Math.sin(yy * 0.05 + s.g) * 3) * 0.5 + 0.5;
+      let k = s.l * (1 - o.grain / 2 + grain * o.grain) + s.fib[fy] * o.fibre + (rnd() - 0.5) * 0.04;
+      let bump = 150 + grain * 25 + s.fib[fy] * 30;
+      for (const n of s.knots) {
+        const dx = (lx - n.x) / (n.r * 2.6), dy = (ly - n.y) / n.r, q = dx * dx + dy * dy;
+        if (q < 9) { k *= 1 - 0.32 * Math.exp(-q); bump -= 40 * Math.exp(-q); }
+      }
+      if (lx < o.joint || ly < o.joint) {
+        if (o.grout) k = -1; else k *= 0.55;
+        bump = 40;
+      }
+      const i = o.vert ? (x * cw + y) * 4 : (y * cw + x) * 4;
+      if (k < 0) { d[i] = o.grout[0]; d[i + 1] = o.grout[1]; d[i + 2] = o.grout[2]; }
+      else { d[i] = Math.min(255, o.rgb[0] * k * (1 + s.w)); d[i + 1] = Math.min(255, o.rgb[1] * k); d[i + 2] = Math.min(255, o.rgb[2] * k * (1 - s.w)); }
+      d[i + 3] = 255;
       bd[i] = bd[i + 1] = bd[i + 2] = bump; bd[i + 3] = 255;
     }
     cx.putImageData(img, 0, 0); bx.putImageData(bimg, 0, 0);
-    return { map: toTex(c, [1 / 1.2, 1 / 1.2], true), bump: toTex(b, [1 / 1.2, 1 / 1.2]) };
+    const rep = o.vert ? [1 / (rows * o.w), 1 / (2 * o.len)] : [1 / (2 * o.len), 1 / (rows * o.w)];
+    return { map: toTex(c, rep, true), bump: toTex(b, rep) };
   }
-  const hb = chevronTextures();
-  M.floor.map = hb.map; M.floor.bumpMap = hb.bump; M.floor.bumpScale = 0.003; M.floor.roughness = 0.55; M.floor.needsUpdate = true;
-  oakFloor.forEach(o => tag(o, 'Пол: инженерная доска дуб, ёлочка'));
+  // laminate: straight plank 1380 x 193, warm mid oak, soft grain, laid along the long axis towards the window
+  const LAM = { len: 1.38, w: 0.193, rgb: [132, 105, 80], vary: 0.16, grain: 0.10, fibre: 0.05, knots: 2, joint: 1.5 };
+  const hb = plankTextures(LAM);
+  M.floor.map = hb.map; M.floor.bumpMap = hb.bump; M.floor.bumpScale = 0.002; M.floor.roughness = 0.6; M.floor.needsUpdate = true;
+  oakFloor.forEach(o => tag(o, 'Пол: ламинат под дуб, прямая доска 1380 × 193, вдоль комнаты'));
+  // bathroom: wood-look porcelain 20 x 120, greige oak with visible grain and a thin grout line
+  const WTILE = { len: 1.2, w: 0.2, rgb: [137, 110, 86], vary: 0.14, grain: 0.12, fibre: 0.06, knots: 2, joint: 2.2, grout: [150, 140, 128] };
+  const wtFloor = plankTextures(WTILE);
+  const woodTile = mat({ map: wtFloor.map, bumpMap: wtFloor.bump, bumpScale: 0.002, roughness: 0.42 });
+  FLOOR_WOOD.forEach(r => {
+    const o = mesh(new THREE.ShapeGeometry(rectShape(r[0], r[1], r[2], r[3])), woodTile, 0, 0.002, 0);
+    o.rotation.x = -Math.PI / 2; o.castShadow = false;
+    tag(o, 'Пол санузла: керамогранит под дерево 20 × 120');
+  });
   function tileTexture() {
     const S = 1024, c = newCanvas(S), cx = c.getContext('2d');
     cx.fillStyle = '#ECE9E4'; cx.fillRect(0, 0, S, S);
@@ -1045,7 +1120,7 @@
 
   // ---------- ceiling (only shown when you walk inside) ----------
   const ceilGroup = new THREE.Group(); scene.add(ceilGroup);
-  FLOOR_OAK.concat(FLOOR_TILE).forEach(r => {
+  FLOOR_OAK.concat(FLOOR_WOOD, FLOOR_TILE).forEach(r => {
     const o = new THREE.Mesh(new THREE.ShapeGeometry(rectShape(r[0], r[1], r[2], r[3])), MF.ceil);
     o.rotation.x = -Math.PI / 2; o.position.y = H; o.receiveShadow = true; ceilGroup.add(o);
   });
@@ -1473,7 +1548,8 @@
     duvet: mat({ color: '#EDEAE4', map: TX.fabric.map, bumpMap: TX.fabric.bump, bumpScale: 0.005, roughness: 1 }),
     duvetFold: mat({ color: '#A8A49C', map: TX.fabric.map, bumpMap: TX.fabric.bump, bumpScale: 0.006, roughness: 1 }),
     pillow: mat({ color: '#F2F0EB', map: TX.fabric.map, bumpMap: TX.fabric.bump, bumpScale: 0.004, roughness: 1 }),
-    boucle: mat({ color: '#D9D6CF', map: TX.fabric.map, bumpMap: TX.fabric.bump, bumpScale: 0.006, roughness: 1 })
+    boucle: mat({ color: '#D9D6CF', map: TX.fabric.map, bumpMap: TX.fabric.bump, bumpScale: 0.006, roughness: 1 }),
+    ward: mat({ color: '#767B81', roughness: 0.17, metalness: 0.04 })   // фасады шкафа-купе: свой материал, чтобы красить отдельно от кухни
   };
   const WARD = { z0: BZ0, z1: bedDoor[0] - 0.02, d: 0.60, h: 2.50 };   // шкаф вдоль стены с санузлом
   const BEDX = [-2.26, -0.66];              // кровать 1,60, изголовьем к стене с соседями
@@ -1498,7 +1574,7 @@
     const g = new THREE.Group();
     mesh(new THREE.BoxGeometry(w, h, d), carcassMat, 0, h / 2, 0, g);
     for (let i = 0; i < 2; i++) {
-      const f = mesh(roundedBox(w / 2 - 0.006, h - 0.1, 0.022, 0.004, 1), kitchenMat, (i - 0.5) * (w / 2), h / 2 + 0.05, d / 2 + 0.012, g);
+      const f = mesh(roundedBox(w / 2 - 0.006, h - 0.1, 0.022, 0.004, 1), MB.ward, (i - 0.5) * (w / 2), h / 2 + 0.05, d / 2 + 0.012, g);
       f.userData.name = 'Шкаф-купе ' + Math.round(w * 100) + ' × 60 см';
     }
     mesh(new THREE.BoxGeometry(w, 0.055, d), plinthMat, 0, 0.0275, 0, g);
@@ -1512,6 +1588,7 @@
     stone: mat({ map: toTex(marbleCanvas('#E6E0D6'), [1 / 1.2, 1 / 2.4], true), roughness: 0.18 }),
     flute: mat({ color: '#8E6038', roughness: 0.5 }),
     dark: mat({ color: '#2E2B28', roughness: 0.4 }),
+    vanity: mat({ color: '#7A7F85', roughness: 0.62 }),
     black: mat({ color: '#17191A', roughness: 0.3, metalness: 0.75 }),
     white: mat({ color: '#F6F4F1', roughness: 0.14 }),
     showerGlass: mat({ color: '#DCE8EC', roughness: 0.03, metalness: 0, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
@@ -1529,7 +1606,16 @@
   clad(MW.stone, WX0, WZ1, WX0, BZ0, 0, H, 1, 0, walls[9].g);                 // west
   clad(MW.stone, WX0, WZ1, WX1b, WZ1, 0, H, 0, -1, walls[10].g);              // south
   clad(MW.stone, WX1, BZ0, WX1, WZJ, 0, H, -1, 0, walls[11].g);               // east, north part
-  clad(MW.stone, WX1b, WZJ, WX1b, WZ1, 0, H, -1, 0, walls[13].g);             // east, shaft part
+  // east, shaft part: the toilet wall, in the floor tile turned vertical — the floor runs up the wall
+  {
+    const t = plankTextures(Object.assign({}, WTILE, { vert: true })), w = WZ1 - WZJ;
+    t.map.repeat.set(t.map.repeat.x * w, t.map.repeat.y * H); t.bump.repeat.copy(t.map.repeat);
+    MW.wallWood = mat({ map: t.map, bumpMap: t.bump, bumpScale: 0.002, roughness: 0.42 });
+    const o = mesh(new THREE.PlaneGeometry(w, H), MW.wallWood,
+      WX1b - 0.006, H / 2, (WZJ + WZ1) / 2, walls[13].g);
+    o.rotation.y = -Math.PI / 2; o.castShadow = false; o.receiveShadow = true;
+    tag(o, 'Стена за унитазом: тот же керамогранит под дерево, что на полу, доска вертикально');
+  }
   clad(MW.stone, WX1, WZJ, WX1b, WZJ, 0, H, 0, 1, walls[12].g);               // the 0.14 step face
   // fluted taupe behind the vanity, travertine over the shower
   clad(MW.stone, WX0, BZ0, 1.93, BZ0, 0, H, 0, 1, walls[7].g);
@@ -1574,47 +1660,58 @@
     mesh(new THREE.BoxGeometry(0.022, 1.45, 0.022), MW.black, BATH.x1, top + 0.725, BZ0 + 0.80);
     mesh(new THREE.BoxGeometry(0.022, 0.022, 0.82), MW.black, BATH.x1, top + 1.45, BZ0 + 0.40);
   }
-  // ---- стиральная машина под столешницей с раковиной, северная стена ----
-  const WASH = { x0: 1.98, x1: 2.58 };
+  // ---- северная стена: тумба с раковиной, стиральная машина на месте прежнего унитаза, одна столешница ----
+  const VAN = { x0: 1.98, x1: 2.58 }, WASH = { x0: 2.60, x1: 3.20 };
   {
-    const g = new THREE.Group(), xc = (WASH.x0 + WASH.x1) / 2, d = 0.60, top = 0.92;
-    mesh(roundedBox(0.595, 0.84, 0.595, 0.012, 2), MW.white, xc, 0.44, BZ0 + 0.31, g);
-    mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.03, 32), MW.dark, xc, 0.47, BZ0 + 0.60, g).rotation.x = Math.PI / 2;
-    mesh(new THREE.BoxGeometry(0.5, 0.05, 0.02), MW.white, xc, 0.78, BZ0 + 0.60, g);
-    mesh(roundedBox(WASH.x1 - WASH.x0 + 0.06, 0.04, d + 0.03, 0.006, 1), quartz, xc, top - 0.02, BZ0 + d / 2, g);
-    // накладная раковина над машиной
-    mesh(lathe([[0, 0], [0.26, 0], [0.27, 0.015], [0.27, 0.10], [0.255, 0.11], [0.24, 0.02], [0, 0.02]], 44), MW.white, xc, top, BZ0 + 0.30, g);
+    const g = new THREE.Group(), xc = (VAN.x0 + VAN.x1) / 2, xw = (WASH.x0 + WASH.x1) / 2, d = 0.62, top = 0.92;
+    // тумба 60 под раковиной, два ящика
+    mesh(roundedBox(0.60, 0.80, 0.55, 0.006, 1), MW.vanity, xc, 0.50, BZ0 + 0.29, g);
+    mesh(new THREE.BoxGeometry(0.58, 0.004, 0.01), MW.dark, xc, 0.52, BZ0 + 0.565, g);
+    mesh(new THREE.BoxGeometry(0.56, 0.10, 0.50), MW.dark, xc, 0.05, BZ0 + 0.26, g);
+    // стиральная машина
+    mesh(roundedBox(0.595, 0.84, 0.595, 0.012, 2), MW.white, xw, 0.44, BZ0 + 0.32, g);
+    mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.03, 32), MW.dark, xw, 0.47, BZ0 + 0.62, g).rotation.x = Math.PI / 2;
+    mesh(new THREE.BoxGeometry(0.5, 0.05, 0.02), MW.white, xw, 0.78, BZ0 + 0.62, g);
+    // короб справа от машины: труба 110 от унитаза и подвод воды к нему
+    mesh(new THREE.BoxGeometry(WX1 - WASH.x1 - 0.01, top - 0.04, 0.018), MW.vanity, (WASH.x1 + WX1) / 2, (top - 0.04) / 2, BZ0 + d - 0.01, g);
+    // столешница во всю стену
+    mesh(roundedBox(WX1 - VAN.x0, 0.04, d, 0.006, 1), quartz, (VAN.x0 + WX1) / 2, top - 0.02, BZ0 + d / 2, g);
+    // встраиваемая раковина и смеситель
+    mesh(roundedBox(0.46, 0.012, 0.36, 0.05, 3), MW.white, xc, top + 0.006, BZ0 + 0.34, g);
+    mesh(roundedBox(0.40, 0.006, 0.30, 0.045, 3), mat({ color: '#E3E7E8', roughness: 0.08 }), xc, top + 0.011, BZ0 + 0.34, g);
     mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.24, 14), MW.black, xc, top + 0.12, BZ0 + 0.09, g);
     const sp = mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.15, 12), MW.black, xc, top + 0.23, BZ0 + 0.165, g); sp.rotation.x = Math.PI / 2;
-    scene.add(g); tag(g, 'Стиральная машина 60 под столешницей, раковина сверху');
-    contact(xc, BZ0 + 0.32, 0.85, 0.85, 0.5);
+    scene.add(g); tag(g, 'Тумба 60 с раковиной, стиральная машина 60, общая столешница 144 см');
+    contact((VAN.x0 + WX1) / 2, BZ0 + 0.32, WX1 - VAN.x0 + 0.25, 0.85, 0.5);
     const mg = new THREE.Group(); walls[7].g.add(mg);
     mesh(new THREE.BoxGeometry(0.60, 0.80, 0.022), MW.black, xc, 1.62, BZ0 + 0.035, mg);
     const mgl = mesh(new THREE.PlaneGeometry(0.56, 0.76), mirrorMat, xc, 1.62, BZ0 + 0.048, mg); mgl.castShadow = false;
     tag(mg, 'Зеркало с подсветкой 60 × 80 см');
   }
-  // ---- напольный унитаз-компакт над выпуском 110 (W7) ----
+  // ---- напольный унитаз-компакт у стены стояка, в юго-восточном углу, смотрит на запад ----
+  const WC = { z: -3.05 };
   {
-    const g = new THREE.Group(), xc = 3.17;
+    const g = new THREE.Group();
     // бачок
-    mesh(roundedBox(0.37, 0.40, 0.19, 0.02, 2), MW.white, xc, 0.62, BZ0 + 0.10, g);
-    mesh(roundedBox(0.35, 0.022, 0.17, 0.008, 1), MW.white, xc, 0.833, BZ0 + 0.10, g);
-    mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.012, 20), MW.black, xc, 0.845, BZ0 + 0.10, g);
+    mesh(roundedBox(0.37, 0.40, 0.19, 0.02, 2), MW.white, 0, 0.62, 0.10, g);
+    mesh(roundedBox(0.35, 0.022, 0.17, 0.008, 1), MW.white, 0, 0.833, 0.10, g);
+    mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.012, 20), MW.black, 0, 0.845, 0.10, g);
     // чаша
-    mesh(lathe([[0, 0], [0.085, 0], [0.095, 0.08], [0.1, 0.24], [0.09, 0.25], [0.08, 0.1], [0, 0.06]], 28), MW.white, xc, 0.02, BZ0 + 0.30, g);
-    const pan = mesh(roundedBox(0.36, 0.26, 0.46, 0.11, 5), MW.white, xc, 0.30, BZ0 + 0.40, g);
-    mesh(roundedBox(0.355, 0.03, 0.45, 0.07, 4), MW.white, xc, 0.435, BZ0 + 0.40, g);
-    mesh(roundedBox(0.33, 0.022, 0.42, 0.07, 4), mat({ color: '#EDEFF0', roughness: 0.2 }), xc, 0.456, BZ0 + 0.405, g);
-    scene.add(g); tag(g, 'Унитаз напольный, компакт, над выпуском 110 мм');
-    contact(xc, BZ0 + 0.38, 0.6, 0.8, 0.45);
+    mesh(lathe([[0, 0], [0.085, 0], [0.095, 0.08], [0.1, 0.24], [0.09, 0.25], [0.08, 0.1], [0, 0.06]], 28), MW.white, 0, 0.02, 0.30, g);
+    mesh(roundedBox(0.36, 0.26, 0.46, 0.11, 5), MW.white, 0, 0.30, 0.40, g);
+    mesh(roundedBox(0.355, 0.03, 0.45, 0.07, 4), MW.white, 0, 0.435, 0.40, g);
+    mesh(roundedBox(0.33, 0.022, 0.42, 0.07, 4), mat({ color: '#EDEFF0', roughness: 0.2 }), 0, 0.456, 0.405, g);
+    g.position.set(WX1b - 0.006, 0, WC.z); g.rotation.y = -Math.PI / 2;
+    scene.add(g); tag(g, 'Унитаз напольный, компакт, у стены стояка');
+    contact(WX1b - 0.38, WC.z, 0.8, 0.6, 0.45);
   }
   // ---- полотенцесушитель на стене стояка ----
   {
     const g = new THREE.Group(); walls[13].g.add(g);
     const xw = WX1b - 0.05;
-    [-0.25, 0.25].forEach(dz => mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.72, 12), MW.black, xw, 1.31, -3.10 + dz, g));
-    for (let i = 0; i < 7; i++) { const r = mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.5, 10), MW.black, xw, 0.97 + i * 0.113, -3.10, g); r.rotation.x = Math.PI / 2; }
-    tag(g, 'Полотенцесушитель электрический 50 × 72 см');
+    [-0.25, 0.25].forEach(dz => mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.72, 12), MW.black, xw, 1.51, WC.z + dz, g));
+    for (let i = 0; i < 7; i++) { const r = mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.5, 10), MW.black, xw, 1.17 + i * 0.113, WC.z, g); r.rotation.x = Math.PI / 2; }
+    tag(g, 'Полотенцесушитель электрический 50 × 72 см, над бачком унитаза');
   }
 
   // ================= hall =================
@@ -1773,6 +1870,7 @@
   const pickedEl = document.getElementById('picked');
   let highlighted = [];
   function clearHighlight() { highlighted.forEach(({ o, m }) => { o.material = m; }); highlighted = []; invalidate(); }
+  let colorsFocus = null;   // конструктор цветов: подсветить строку выбранного предмета
   function pick(x, y) {
     const r = el.getBoundingClientRect();
     ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
@@ -1782,6 +1880,7 @@
     if (!hit) { pickedEl.textContent = ''; return; }
     const name = hit.object.userData.name;
     pickedEl.textContent = name;
+    if (colorsFocus) colorsFocus(hit);
     pickables.filter(p => p.userData.name === name).forEach(o => {
       const m = o.material, hm = m.clone();
       hm.emissive = new THREE.Color('#3E6B6E'); hm.emissiveIntensity = 0.3;
@@ -2103,13 +2202,13 @@
     { id: 'B4', rm: 'Спальня', st: 'exist', k: 'socket', x: -0.40, z: BZ1, y: 0.30, f: [0, -1], t: 'Розетка на стене к гостиной', n: 'Определение неуверенное.' },
     { id: 'W1', rm: 'Санузел', st: 'move', k: 'water', x: 1.52, z: BZ0, y: 0.45, f: [0, 1], t: 'Водорозетка, горячая', n: 'По оси ванна встаёт точно на неё, но по высоте нет: 0,45 ниже борта ванны 0,56, вывод окажется за корпусом. Поднимаем штробой до 0,78 — W25.' },
     { id: 'W2', rm: 'Санузел', st: 'move', k: 'water', x: 1.68, z: BZ0, y: 0.45, f: [0, 1], t: 'Водорозетка, холодная', n: 'Пара к W1, та же проблема по высоте.' },
-    { id: 'W3', rm: 'Санузел', st: 'exist', k: 'water', x: 2.32, z: BZ0, y: 0.28, f: [0, 1], t: 'Водорозетка, горячая', n: 'Внутри тумбы со стиральной машиной (x 1,98…2,58). Питает смеситель раковины.' },
-    { id: 'W4', rm: 'Санузел', st: 'exist', k: 'water', x: 2.47, z: BZ0, y: 0.28, f: [0, 1], t: 'Водорозетка, холодная', n: 'Пара к W3. Отсюда же отвод на стиральную машину.' },
-    { id: 'W5', rm: 'Санузел', st: 'exist', k: 'sewer', x: 2.38, z: BZ0, y: 0.19, f: [0, 1], t: 'Канализация 50 мм', n: 'Слив раковины и стиральной машины — обе над ним. Сюда же слив ванны: 0,6 м по полу вдоль северной стены.' },
-    { id: 'W6', rm: 'Санузел', st: 'exist', k: 'water', x: 3.16, z: BZ0, y: 0.32, f: [0, 1], t: 'Водорозетка, только холодная', n: 'Подача на бачок унитаза.' },
-    { id: 'W7', rm: 'Санузел', st: 'exist', k: 'sewer', x: 3.23, z: BZ0, y: 0.11, f: [0, 1], t: 'Выпуск канализации 110 мм', n: 'Место унитаза. Напольный компакт ставим по оси x 3,17 — 6 см смещения берётся эксцентриковой манжетой.' },
+    { id: 'W3', rm: 'Санузел', st: 'exist', k: 'water', x: 2.32, z: BZ0, y: 0.28, f: [0, 1], t: 'Водорозетка, горячая', n: 'Внутри тумбы с раковиной (x 1,98…2,58). Питает смеситель раковины.' },
+    { id: 'W4', rm: 'Санузел', st: 'exist', k: 'water', x: 2.47, z: BZ0, y: 0.28, f: [0, 1], t: 'Водорозетка, холодная', n: 'Пара к W3, смеситель раковины.' },
+    { id: 'W5', rm: 'Санузел', st: 'exist', k: 'sewer', x: 2.38, z: BZ0, y: 0.19, f: [0, 1], t: 'Канализация 50 мм', n: 'Внутри тумбы: сифон раковины с отводом под шланг стиральной машины (до машины 0,5 м). Сюда же слив ванны: 0,6 м по полу вдоль северной стены.' },
+    { id: 'W6', rm: 'Санузел', st: 'exist', k: 'water', x: 3.16, z: BZ0, y: 0.32, f: [0, 1], t: 'Водорозетка, только холодная', n: 'Теперь за стиральной машиной — кран машины прямо на ней. Тройником отсюда же подвод к новому месту бачка, W26.' },
+    { id: 'W7', rm: 'Санузел', st: 'exist', k: 'sewer', x: 3.23, z: BZ0, y: 0.11, f: [0, 1], t: 'Выпуск канализации 110 мм', n: 'Унитаз отсюда уходит в угол у стены стояка. Выпуск остаётся под столешницей справа от машины и принимает трубу 110 от нового места унитаза — W27.' },
     { id: 'W8', rm: 'Санузел', st: 'exist', k: 'sewer', x: 2.60, z: BZ0 + 0.02, y: 0.06, f: [0, 1], t: 'Лежак 110 мм по полу', n: 'Проложен открыто вдоль северной стены. Пол санузла всё равно поднимается — в этот же пирог прячется слив ванны.' },
-    { id: 'W9', rm: 'Санузел', st: 'move', k: 'box', x: WX1, z: -4.15, y: 1.05, f: [-1, 0], t: 'Единственная электрическая точка санузла', n: 'Попадает за бачок унитаза. Переносим на стену стояка под полотенцесушитель — W22.' },
+    { id: 'W9', rm: 'Санузел', st: 'exist', k: 'box', x: WX1, z: -4.15, y: 1.05, f: [-1, 0], t: 'Единственная электрическая точка санузла', n: 'После переноса унитаза оказалась над столешницей у машины, на 13 см выше неё. Остаётся на месте и становится розеткой стиральной машины IP44, своя линия 16 А + УЗО 10 мА.', ld: '2,2 кВт' },
     { id: 'H1', rm: 'Прихожая', st: 'exist', k: 'switch2', x: 1.93, z: HZ0, y: 0.95, f: [0, 1], t: 'Выключатель санузла: свет + вентилятор', n: 'После перевески петель двери на восточный косяк открытое полотно его не перекрывает. Коробку используем как есть, меняем механизм на двухклавишный.' },
     { id: 'H2', rm: 'Прихожая', st: 'exist', k: 'cable', x: 2.81, z: HZ0, y: 0.65, f: [0, 1], t: 'Кабель или коробка', n: 'Определение неуверенное.' },
     // ---- кухня: предложение после перестановки ----
@@ -2150,9 +2249,10 @@
     { id: 'B29', rm: 'Спальня', st: 'new', k: 'light', x: -1.45, z: -3.05, y: 2.70, f: [0, 0], t: 'Плоский потолочный светильник спальни, Ø 56', n: 'Существующий вывод B3 смещается к центру кровати. Нажмите на значок — светильник включится в 3D.' },
     // ---- санузел ----
     { id: 'W25', rm: 'Санузел', st: 'new', k: 'water', x: 1.60, z: BZ0, y: 0.78, f: [0, 1], t: 'Водорозетки смесителя ванны, 0,78', n: 'Сюда поднимаем W1 и W2 — это 33 см штробы вверх по северной стене. Отметка 0,78 даёт излив на 0,20 выше борта ванны.' },
-    { id: 'W20', rm: 'Санузел', st: 'new', k: 'socket', x: 2.70, z: BZ0, y: 0.95, f: [0, 1], t: 'Розетка стиральной машины, IP44', n: 'Сбоку от машины, над столешницей, а не за корпусом. Своя линия 16 А + УЗО 10 мА.', ld: '2,2 кВт' },
-    { id: 'W21', rm: 'Санузел', st: 'new', k: 'wlight', x: 2.28, z: BZ0, y: 2.05, f: [0, 1], t: 'Вывод подсветки зеркала', n: 'Над зеркалом 60 × 80 на тумбе со стиральной машиной.' },
-    { id: 'W22', rm: 'Санузел', st: 'new', k: 'socket', x: WX1b, z: -2.78, y: 1.05, f: [-1, 0], t: 'Розетка полотенцесушителя + фен, IP44', n: 'Сюда переезжает существующая точка W9. Водяного контура в санузле нет, сушитель электрический.', ld: '0,12 кВт' },
+    { id: 'W26', rm: 'Санузел', st: 'new', k: 'water', x: WX1b, z: WC.z - 0.26, y: 0.20, f: [-1, 0], t: 'Подвод холодной воды на бачок', n: 'Новое место унитаза. Тройник от W6, 1,3 м вдоль стены стояка: в коробе под столешницей, дальше в штробе.' },
+    { id: 'W27', rm: 'Санузел', st: 'new', k: 'sewer', x: WX1b, z: WC.z, y: 0.18, f: [-1, 0], t: 'Канализация 110 под унитаз, новая', n: 'Труба 110 от выпуска унитаза к W7: 1,3 м вдоль стены стояка, перепад 0,18 → 0,11 — уклон 5 %, с запасом. Идёт низким коробом за унитазом и в коробе под столешницей справа от машины.' },
+    { id: 'W21', rm: 'Санузел', st: 'new', k: 'wlight', x: 2.28, z: BZ0, y: 2.05, f: [0, 1], t: 'Вывод подсветки зеркала', n: 'Над зеркалом 60 × 80 над тумбой с раковиной.' },
+    { id: 'W22', rm: 'Санузел', st: 'new', k: 'socket', x: WX1b, z: -2.78, y: 1.05, f: [-1, 0], t: 'Розетка полотенцесушителя + фен, IP44', n: 'Рядом с бачком, выше крышки. Шлейф от W9 по стене стояка. Водяного контура в санузле нет, сушитель электрический.', ld: '0,12 кВт' },
     { id: 'W23', rm: 'Санузел', st: 'new', k: 'light', x: 2.50, z: -3.45, y: 2.70, f: [0, 0], t: 'Плоский влагостойкий светильник санузла, IP44', n: 'Нажмите на значок — светильник включится в 3D.' },
     { id: 'W24', rm: 'Санузел', st: 'new', k: 'check', x: WX1b, z: -3.60, y: 2.45, f: [-1, 0], t: 'Вентканал санузла — уточнить', n: 'На фотографиях потолок санузла срезан, канала не видно. Нужен принудительный вентилятор с линией от выключателя света.' },
     // ---- прихожая ----
@@ -2290,8 +2390,9 @@
     { b: [0.53, -4.225, 1.13, -2.46], l: 'шкаф-купе 178 × 60' },
     // санузел
     { b: [1.23, -4.225, 1.93, -2.725], l: 'ванна 150 × 70', d: 2 },
-    { b: [1.98, -4.225, 2.58, -3.625], l: 'стиралка + раковина' },
-    { b: [2.99, -4.225, 3.35, -3.525], l: 'унитаз' },
+    { b: [1.98, -4.225, 2.58, -3.605], l: 'тумба + раковина' },
+    { b: [2.60, -4.225, 3.20, -3.605], l: 'стиралка' },
+    { b: [2.91, -3.235, 3.56, -2.865], l: 'унитаз' },
     // прихожая
     { b: [2.27, -1.425, 3.45, -0.925], l: 'шкаф 118 × 50' },
     { b: [2.79, -2.58, 3.41, -2.21], l: 'банкетка' }
@@ -2355,7 +2456,7 @@
     o += `<defs><style>${css}</style></defs>`;
     // floors
     FLOOR_OAK.forEach(r => o += `<rect class="fl" x="${px(Math.min(r[0], r[2]))}" y="${px(Math.min(r[1], r[3]))}" width="${px(Math.abs(r[2] - r[0]))}" height="${px(Math.abs(r[3] - r[1]))}"/>`);
-    FLOOR_TILE.forEach(r => o += `<rect class="ft" x="${px(Math.min(r[0], r[2]))}" y="${px(Math.min(r[1], r[3]))}" width="${px(Math.abs(r[2] - r[0]))}" height="${px(Math.abs(r[3] - r[1]))}"/>`);
+    FLOOR_WOOD.concat(FLOOR_TILE).forEach(r => o += `<rect class="ft" x="${px(Math.min(r[0], r[2]))}" y="${px(Math.min(r[1], r[3]))}" width="${px(Math.abs(r[2] - r[0]))}" height="${px(Math.abs(r[3] - r[1]))}"/>`);
     // walls
     walls.forEach(w => {
       const segs = [];
@@ -2539,6 +2640,7 @@
     tab = id;
     Object.keys(sheets).forEach(k => { sheets[k].hidden = k !== id; });
     panel3d.hidden = id !== 't3d';
+    document.getElementById('cpanel').hidden = id !== 't3d' || document.getElementById('btnColors').getAttribute('aria-pressed') !== 'true';
     document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === id)));
     if (id === 'tplan') paintPlan();
     if (id === 't3d') { resize(); markShadows(); }
@@ -2547,6 +2649,29 @@
 
 
   // ================= цветовые гаммы комнат (кухня — константа) =================
+  // Стены — одна геометрия на две комнаты, поэтому цвет по комнатам считается в шейдере:
+  // точка чуть впереди грани (по нормали) попадает в прямоугольник комнаты — берём её цвет.
+  const lin = (hex) => new THREE.Color(hex).convertSRGBToLinear();
+  const wallU = { L: lin('#C9C4BC'), B: lin('#C9C4BC'), H: lin('#C9C4BC') };
+  const f3 = (v) => v.toFixed(3);
+  const wallRoom = (x, z) =>
+    (x > X0 - 0.3 && x < X1 && z > Z0 && z < Z1 + 0.3 && !(x > 2.15 && z < -0.805)) ? 'L'
+      : (x < BX1 && z < BZ1 && x > X0 - 0.3 && z > BZ0 - 0.3) ? 'B' : 'H';
+  M.wall.onBeforeCompile = (sh) => {
+    sh.uniforms.uWL = { value: wallU.L }; sh.uniforms.uWB = { value: wallU.B }; sh.uniforms.uWH = { value: wallU.H };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWP;\nvarying vec3 vWN;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvWN = mat3(modelMatrix) * objectNormal;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWP;\nvarying vec3 vWN;\nuniform vec3 uWL;\nuniform vec3 uWB;\nuniform vec3 uWH;')
+      .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `
+        vec3 wp = vWP + normalize(vWN) * 0.06, wc = uWH;
+        if (wp.x > ${f3(X0 - 0.3)} && wp.x < ${f3(X1)} && wp.z > ${f3(Z0)} && wp.z < ${f3(Z1 + 0.3)} && !(wp.x > 2.15 && wp.z < -0.805)) wc = uWL;
+        else if (wp.x < ${f3(BX1)} && wp.z < ${f3(BZ1)} && wp.x > ${f3(X0 - 0.3)} && wp.z > ${f3(BZ0 - 0.3)}) wc = uWB;
+        vec4 diffuseColor = vec4(wc, opacity);`);
+  };
+  M.wall.needsUpdate = true;
+  let colorsRefresh = () => {};
   const srgb = (m, hex) => { if (!m) return; m.color.set(hex); m.color.convertSRGBToLinear(); m.needsUpdate = true; };
   const SCHEMES = [
     {
@@ -2559,7 +2684,7 @@
       stoolA: '#D9D6CF', stoolB: '#C8C4BC', bedFab: '#9B9790', bedFold: '#A8A49C', boucle: '#D9D6CF',
       wardrobe: '#7A7F85', flute: '#8E6038', tile: '#DCD8D1', stone: '#E6E0D6', tray: '#2E2B28',
       art: ['#E4E1DA', '#A98E63', '#3C4046', '#C6C2BA'],
-      tileNote: 'Керамогранит нейтральный серо-бежевый, травертин на стенах без подкраски.'
+      tileNote: 'Травертин на стенах без подкраски, керамогранит тамбура нейтральный серо-бежевый.'
     },
     {
       id: 'sand', name: 'Песок и терракота', tag: 'тёплая',
@@ -2571,7 +2696,7 @@
       stoolA: '#E2D9C9', stoolB: '#CFC3B0', bedFab: '#B3A28D', bedFold: '#BCAC97', boucle: '#E2D9C9',
       wardrobe: '#8A7F72', flute: '#A8674A', tile: '#E3D6C2', stone: '#F0E4D0', tray: '#44352A',
       art: ['#EFE7DA', '#A8674A', '#5E4733', '#D3C4AE'],
-      tileNote: 'Керамогранит тёплый песочный, травертин подкрашен в сторону беж — санузел в одной температуре с комнатой.'
+      tileNote: 'Травертин подкрашен в сторону беж — санузел в одной температуре с комнатой, керамогранит тамбура тёплый песочный.'
     },
     {
       id: 'sage', name: 'Шалфей', tag: 'спокойная',
@@ -2583,7 +2708,7 @@
       stoolA: '#DCDACE', stoolB: '#C7C6B9', bedFab: '#9BA392', bedFold: '#A7AD9C', boucle: '#DCDACE',
       wardrobe: '#79826F', flute: '#8E6038', tile: '#DCDCD2', stone: '#E6E8DC', tray: '#2C332A',
       art: ['#E6E6DC', '#A98E63', '#45573F', '#C4C7B9'],
-      tileNote: 'Керамогранит с лёгким холодным оттенком, травертин чуть уведён в зелень — иначе санузел выпадает из гаммы.'
+      tileNote: 'Травертин чуть уведён в зелень — иначе санузел выпадает из гаммы, керамогранит тамбура с лёгким холодным оттенком.'
     },
     {
       id: 'ink', name: 'Графит и дуб', tag: 'контрастная',
@@ -2595,19 +2720,19 @@
       stoolA: '#E4E1DA', stoolB: '#CFCCC4', bedFab: '#86867F', bedFold: '#95948C', boucle: '#E4E1DA',
       wardrobe: '#63676B', flute: '#A9803F', tile: '#C9C5BE', stone: '#D8D4CC', tray: '#1B1D20',
       art: ['#D8D5CE', '#A9803F', '#23262A', '#AFACA4'],
-      tileNote: 'Керамогранит на тон темнее остальных вариантов и травертин приглушён — светлый санузел рядом с тёмной комнатой бил бы по глазам.'
+      tileNote: 'Травертин приглушён — светлый санузел рядом с тёмной комнатой бил бы по глазам, керамогранит тамбура на тон темнее.'
     }
   ];
   let scheme = 0;
   function applyScheme(i) {
     const S = SCHEMES[i]; if (!S) return;
     scheme = i;
-    srgb(M.wall, S.wall); srgb(M.sofa, S.sofa); srgb(M.sofaDark, S.sofaDark);
+    srgb(M.wall, S.wall); Object.values(wallU).forEach(c => c.copy(lin(S.wall))); srgb(M.sofa, S.sofa); srgb(M.sofaDark, S.sofaDark);
     srgb(M.pillowA, S.pillowA); srgb(M.pillowB, S.pillowB); srgb(M.throwM, S.throw);
     srgb(M.linen, S.linen); srgb(standMat, S.stand); srgb(M.rug, S.rug);
     srgb(velvetPink, S.stoolA); srgb(velvetTaupe, S.stoolB);
     srgb(MB.bedFab, S.bedFab); srgb(MB.duvetFold, S.bedFold); srgb(MB.boucle, S.boucle);
-    srgb(wardrobeMat, S.wardrobe); srgb(MW.flute, S.flute);
+    srgb(wardrobeMat, S.wardrobe); srgb(MW.vanity, S.wardrobe); srgb(MW.flute, S.flute);
     srgb(porcelain, S.tile); srgb(MW.dark, S.tray); srgb(blindMat, S.blind);
     srgb(MW.stone, S.stone); stoneClones.forEach(m => srgb(m, S.stone));
     if (schemeArt) {
@@ -2619,16 +2744,17 @@
       b.textContent = n === i ? 'Включена' : 'Показать в 3D';
       b.setAttribute('aria-pressed', String(n === i));
     });
+    colorsRefresh(true);
     markShadows();
   }
   function buildSchemeTab() {
     let h = `<h2>Цветовые гаммы комнат</h2>
     <p class="lead">Кухня зафиксирована: серый глянец, графит, дуб вотан, чёрная фурнитура — она не меняется ни в одном варианте.
     Меняется всё остальное: стены, <b>диван</b>, текстиль, тумба под телевизор, шкафы, рулонные шторы,
-    а в санузле — <b>керамогранит пола, крупноформатная плитка стен и душевой поддон</b> и акцентная рифлёная панель.
+    а в санузле — <b>крупноформатная плитка стен</b> и акцентная рифлёная панель. Пол санузла и стена за унитазом — керамогранит под дерево, он один во всех вариантах.
     Нажмите «Показать в 3D» — сцена перекрасится, можно сразу сходить по квартире во вкладке «3D».</p>
-    <div class="card"><p class="note">Что общее у всех четырёх: кухня, пол дуб-ёлочка, чёрная фурнитура и смесители,
-    подвесы над баром. Плитка санузла во всех вариантах травертиновая, но подкрашена под гамму — светлый серо-бежевый
+    <div class="card"><p class="note">Что общее у всех четырёх: кухня, ламинат под дуб, чёрная фурнитура и смесители,
+    подвесы над баром. Плитка стен санузла во всех вариантах травертиновая, но подкрашена под гамму — светлый серо-бежевый
     керамогранит рядом с песочными стенами выглядит грязно-зелёным, это типовая ошибка.</p></div>`;
     SCHEMES.forEach((S, i) => {
       h += `<div class="card schemeCard${i === scheme ? ' on' : ''}">
@@ -2653,6 +2779,167 @@
       b.addEventListener('click', () => applyScheme(Number(b.dataset.scheme))));
   }
   buildSchemeTab();
+
+  // ================= конструктор цветов =================
+  // Тип 'c' — сплошной цвет материала. 't' — материал с текстурой (дерево, камень, плитка):
+  // пользователь выбирает итоговый средний цвет, а материалу ставится множитель цель / средний цвет текстуры,
+  // поэтому рисунок сохраняется. 'w' — стены комнаты (униформа шейдера стен).
+  {
+    const byImage = (m) => allMats.filter(x => x.map && x.map.image === m.map.image);
+    const C = [
+      ['Квартира', [
+        ['wL', 'Стены кухни-гостиной', 'w', 'L'],
+        ['wB', 'Стены спальни', 'w', 'B'],
+        ['wH', 'Стены прихожей', 'w', 'H'],
+        ['floor', 'Пол: ламинат', 't', [M.floor]],
+        ['ceil', 'Потолок', 'c', [MF.ceil]],
+        ['trim', 'Плинтус, откосы, наличники', 'c', [M.trim]],
+        ['door', 'Межкомнатные двери', 'c', [MF.door], [[MF.doorRail, 0.96]]],
+        ['fdoor', 'Входная дверь', 'c', [MF.frontDoor]]
+      ]],
+      ['Кухня', [
+        ['kLow', 'Нижние фасады', 'c', [kitchenMat]],
+        ['kUp', 'Навесные шкафы', 'c', [upperMat]],
+        ['kGr', 'Колонны и антресоли', 'c', [graphiteMat]],
+        ['kWood', 'Столешница, фартук и дерево кухни', 't', byImage(woodTop)],
+        ['kPl', 'Цоколь', 't', byImage(plinthMat)],
+        ['stools', 'Стулья', 'c', [velvetPink], [[velvetTaupe, 0.92]]]
+      ]],
+      ['Гостиная', [
+        ['sofa', 'Диван', 'c', [M.sofa], [[M.sofaDark, 0.93]]],
+        ['pilA', 'Подушки — акцент', 'c', [M.pillowA]],
+        ['pilB', 'Подушки — светлые', 'c', [M.pillowB]],
+        ['throw', 'Плед', 'c', [M.throwM]],
+        ['curt', 'Шторы', 'c', [M.linen]],
+        ['blind', 'Рулонные шторы', 'c', [blindMat]],
+        ['rug', 'Ковёр', 't', [M.rug]],
+        ['stand', 'ТВ-тумба', 'c', [standMat]]
+      ]],
+      ['Спальня', [
+        ['bed', 'Кровать, изголовье', 'c', [MB.bedFab]],
+        ['bedFold', 'Покрывало', 'c', [MB.duvetFold]],
+        ['bedPil', 'Декоративные подушки', 'c', [MB.boucle]],
+        ['bedWard', 'Шкаф-купе', 'c', [MB.ward]]
+      ]],
+      ['Санузел', [
+        ['bStone', 'Плитка стен', 't', byImage(MW.stone)],
+        ['bWood', 'Пол и стена за унитазом', 't', [woodTile, MW.wallWood]],
+        ['flute', 'Рифлёная панель', 'c', [MW.flute]],
+        ['vanity', 'Тумба и короб', 'c', [MW.vanity]],
+        ['bTop', 'Столешница', 't', [quartz]]
+      ]],
+      ['Прихожая', [
+        ['hWard', 'Шкаф', 'c', [wardrobeMat]],
+        ['tile', 'Плитка тамбура', 't', [porcelain]]
+      ]]
+    ];
+    const items = [];
+    C.forEach(([g, list]) => list.forEach(([id, label, kind, mats, also]) => items.push({ id, label, kind, mats, also: also || [], group: g })));
+    // средний цвет текстуры, в линейном пространстве
+    const avgOf = (img) => {
+      const c = newCanvas(8), cx = c.getContext('2d'); cx.drawImage(img, 0, 0, 8, 8);
+      const d = cx.getImageData(0, 0, 8, 8).data; let r = 0, g = 0, b = 0;
+      for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+      const n = d.length / 4;
+      return new THREE.Color(r / n / 255, g / n / 255, b / n / 255).convertSRGBToLinear();
+    };
+    items.forEach(it => { if (it.kind === 't') it.avg = avgOf(it.mats[0].map.image); });
+    const hexOf = (c) => '#' + c.clone().convertLinearToSRGB().getHexString().toUpperCase();
+    const read = (it) => {
+      if (it.kind === 'w') return hexOf(wallU[it.mats]);
+      if (it.kind === 't') return hexOf(it.avg.clone().multiply(it.mats[0].color));
+      return hexOf(it.mats[0].color);
+    };
+    const write = (it, hex) => {
+      const t = lin(hex);
+      if (it.kind === 'w') wallU[it.mats].copy(t);
+      else if (it.kind === 't') it.mats.forEach(m => m.color.setRGB(t.r / it.avg.r, t.g / it.avg.g, t.b / it.avg.b));
+      else it.mats.forEach(m => m.color.copy(t));
+      it.also.forEach(([m, k]) => m.color.copy(it.mats[0].color).multiplyScalar(k));
+    };
+    const defaults = {}; items.forEach(it => { defaults[it.id] = read(it); });
+
+    // состояние: только отличия от исходных цветов — в localStorage и в адресе (#colors=id-RRGGBB.id-RRGGBB)
+    const KEY = 'flat569-colors';
+    const diffs = () => items.filter(it => read(it) !== defaults[it.id]).map(it => it.id + '-' + read(it).slice(1)).join('.');
+    const save = () => {
+      const s = diffs();
+      try { if (s) localStorage.setItem(KEY, s); else localStorage.removeItem(KEY); } catch (e) {}
+      try { history.replaceState(null, '', s ? '#colors=' + s : location.pathname + location.search); } catch (e) {}
+    };
+    const load = (s) => {
+      (s || '').split('.').forEach(p => {
+        const [id, hex] = p.split('-'), it = items.find(i => i.id === id);
+        if (it && /^[0-9a-fA-F]{6}$/.test(hex || '')) write(it, '#' + hex);
+      });
+    };
+    const fromHash = (location.hash.match(/colors=([\w.-]+)/) || [])[1];
+    let stored = null; try { stored = localStorage.getItem(KEY); } catch (e) {}
+    load(fromHash || stored);
+
+    const cpanel = document.getElementById('cpanel'), cList = document.getElementById('cList');
+    const btnColors = document.getElementById('btnColors'), cPreset = document.getElementById('cPreset');
+    const rows = {};
+    let html = '';
+    C.forEach(([g, list], gi) => {
+      html += `<details${gi === 0 ? ' open' : ''} data-g="${g}"><summary>${g}</summary>`;
+      list.forEach(([id, label]) => {
+        html += `<label class="crow" data-id="${id}"><span>${label}</span><code></code>
+          <input type="color" aria-label="${label}"><button type="button" class="rst" title="Вернуть исходный">↺</button></label>`;
+      });
+      html += '</details>';
+    });
+    cList.innerHTML = html;
+    items.forEach(it => {
+      const row = cList.querySelector(`[data-id="${it.id}"]`), inp = row.querySelector('input'), code = row.querySelector('code');
+      rows[it.id] = { row, inp, code };
+      inp.addEventListener('input', () => { clearHighlight(); write(it, inp.value); show(it); invalidate(2); });
+      inp.addEventListener('change', save);
+      row.querySelector('.rst').addEventListener('click', (e) => { e.preventDefault(); write(it, defaults[it.id]); show(it); invalidate(2); save(); });
+    });
+    function show(it) {
+      const v = read(it), r = rows[it.id];
+      if (document.activeElement !== r.inp) r.inp.value = v.toLowerCase();
+      r.code.textContent = v; r.row.classList.toggle('changed', v !== defaults[it.id]);
+    }
+    colorsRefresh = (persist) => { items.forEach(show); if (persist) save(); };
+    colorsRefresh();
+
+    cPreset.innerHTML = '<option value="">Взять за основу гамму…</option>' + SCHEMES.map((S, i) => `<option value="${i}">${S.name}</option>`).join('');
+    cPreset.addEventListener('change', () => { if (cPreset.value !== '') applyScheme(Number(cPreset.value)); cPreset.value = ''; });
+    document.getElementById('cResetAll').addEventListener('click', () => {
+      items.forEach(it => write(it, defaults[it.id])); colorsRefresh(true); invalidate(2);
+    });
+    document.getElementById('cShare').addEventListener('click', () => {
+      save();
+      const b = document.getElementById('cShare'), done = (t) => { b.textContent = t; setTimeout(() => { b.textContent = 'Скопировать ссылку'; }, 1600); };
+      if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(() => done('Скопировано'), () => done('Не удалось'));
+      else done('Ссылка в адресной строке');
+    });
+    const setOpen = (on) => {
+      btnColors.setAttribute('aria-pressed', String(on)); cpanel.hidden = !on;
+      try { localStorage.setItem(KEY + '-open', on ? '1' : ''); } catch (e) {}
+    };
+    btnColors.addEventListener('click', () => setOpen(cpanel.hidden));
+    let wasOpen = !!fromHash; try { wasOpen = wasOpen || !!localStorage.getItem(KEY + '-open'); } catch (e) {}
+    if (wasOpen) setOpen(true);
+
+    colorsFocus = (hit) => {
+      if (cpanel.hidden) return;
+      const m = hit.object.material;
+      let it;
+      if (m === M.wall) {
+        const n = hit.face ? hit.face.normal.clone().transformDirection(hit.object.matrixWorld) : new THREE.Vector3();
+        const p = hit.point.clone().addScaledVector(n, 0.06);
+        it = items.find(i => i.kind === 'w' && i.mats === wallRoom(p.x, p.z));
+      } else it = items.find(i => i.mats.includes(m) || i.also.some(([a]) => a === m));
+      if (!it) return;
+      const r = rows[it.id], det = r.row.closest('details');
+      det.open = true;
+      r.row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      r.row.classList.add('flash'); setTimeout(() => r.row.classList.remove('flash'), 1200);
+    };
+  }
 
   // ---------- resize + loop ----------
   function resize() {
